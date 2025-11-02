@@ -1,13 +1,22 @@
+// app/layout.tsx
 import { ClerkProvider } from "@clerk/nextjs";
-import { Inter } from "next/font/google";
-import "../globals.css";
+import { Geist, Geist_Mono } from "next/font/google";
+import ".././globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata = {
   title: "Loom",
   description: "A next.js based threads application",
 };
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
@@ -15,22 +24,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <ClerkProvider>
-            <Topbar/>
-            <main>
-                <LeftSidebar/>
-                <section className="main-container ">
-                   <div className="w-full max-w-4xl">
-                        {children}
-                   </div>
-                </section>
-                <RightSidebar/>
-            </main>
-            <BottomBar/>
-        </ClerkProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-dark-1`}
+        >
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

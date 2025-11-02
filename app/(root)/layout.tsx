@@ -1,21 +1,20 @@
-// app/layout.tsx
+import React from "react";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Geist, Geist_Mono } from "next/font/google";
-import ".././globals.css";
+import { dark } from "@clerk/themes";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import "../globals.css";
+import LeftSidebar from "@/components/shared/LeftSidebar";
+import Bottombar from "@/components/shared/Bottombar";
+import RightSidebar from "@/components/shared/RightSidebar";
+import Topbar from "@/components/shared/Topbar";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Loom",
-  description: "A next.js based threads application",
+  description: "A Next.js 13 Meta Loom application",
 };
 
 export default function RootLayout({
@@ -24,12 +23,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-dark-1`}
-        >
-          {children}
+    <ClerkProvider appearance={{ baseTheme: dark }}>
+      <html lang="en" className="bg-black text-white min-h-screen">
+        <body className={`${inter.className} bg-black min-h-screen`}>
+          <Topbar />
+
+          <main className="flex flex-row min-h-screen">
+            <LeftSidebar />
+            <section className="main-container flex-1">
+              <div className="w-full max-w-4xl">{children}</div>
+            </section>
+            {/* @ts-ignore */}
+            <RightSidebar />
+          </main>
+
+          <Bottombar />
         </body>
       </html>
     </ClerkProvider>

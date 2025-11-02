@@ -158,3 +158,13 @@
 .comment-form_btn {
   @apply rounded-3xl bg-primary-500 px-8 py-2 !text-small-regular text-light-1 max-xs:w-full !important;
 }
+/* Hide the Next.js route dev overlay button */
+#__next-route-announcer__,
+#__next-build-watcher__,
+[data-nextjs-toast],
+[data-nextjs-dev-overlay],
+[data-nextjs-overlay],
+[data-nextjs-router-toast],
+#__next_devtools_container__ {
+  display: none !important;
+}
