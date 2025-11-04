@@ -172,7 +172,15 @@ module.exports = {
       ],
     },
     extend: {
-      colors: {
+       colors: {
+        // Shadcn default system colors
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+
+        // Your custom theme colors
         "primary-500": "#877EFF",
         "secondary-500": "#FFB620",
         blue: "#0095F6",
@@ -189,6 +197,7 @@ module.exports = {
         "gray-1": "#697C89",
         glassmorphism: "rgba(16, 16, 18, 0.60)",
       },
+       
       boxShadow: {
         "count-badge": "0px 0px 6px 2px rgba(219, 188, 159, 0.30)",
         "groups-sidebar": "-30px 0px 60px 0px rgba(28, 28, 31, 0.50)",
@@ -214,4 +223,3 @@ module.exports = {
   },
   plugins: [require("tailwindcss-animate")],
 };
-
