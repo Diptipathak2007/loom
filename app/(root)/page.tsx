@@ -1,7 +1,9 @@
+"use Client"
 import { currentUser } from "@clerk/nextjs/server";
 import User from "@/lib/models/user.model";
 import { connectDB } from "@/lib/mongoose";
 import { redirect } from "next/navigation";
+import { fetchPosts } from "@/lib/actions/loom.actions";
 
 export default async function Home() {
   await connectDB();
@@ -13,13 +15,22 @@ export default async function Home() {
 
   // If user not onboarded → push to onboarding
   if (!dbUser?.onboarded) redirect("/onboarding");
+  const result=await fetchPosts(1,30);
+  console.log("Fetched Posts:",result);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black text-white">
-      <h1 className="text-5xl font-bold">
-        Welcome, {dbUser.name || clerkUser.firstName} 👋
-      </h1>
-    </div>
+    <>
+    <h1 className="head-text text-left">HOME</h1>
+    <section className="mt-9 flex flex-col gap-10">
+      {result.posts.length===0?(
+        <p>No posts available</p>
+      ):(
+        {result.posts.map((post)=>(
+          
+        ))}
+      )}
+    </section>
+    </>
   );
 }
 
