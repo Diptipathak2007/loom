@@ -1,14 +1,7 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    serverActions: true,
-    serverComponentsExternalPackages: ["mongoose"],
-  },
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
-  },
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ["mongoose"],
   images: {
     remotePatterns: [
       {
@@ -27,9 +20,8 @@ const nextConfig = {
         protocol: "https",
         hostname: "placehold.co",
       },
-      
     ],
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
