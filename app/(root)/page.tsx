@@ -32,7 +32,7 @@ export default async function Home() {
                 id={post._id}
                 currentUserId={user?.id}
                 parentId={post.parentId}
-                content={post.content}
+                text={post.text}
                 author={post.author}
                 community={post.community}
                 createdAt={post.createdAt}

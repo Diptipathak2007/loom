@@ -1,71 +1,112 @@
-"use server"
+"use server";
+
 import Loom from "../models/loom.model";
 import User from "../models/user.model";
-
 import { connectDB } from "../mongoose";
 import { revalidatePath } from "next/cache";
 
-interface Params {
-    text:string;
-    author:string;
-    communityId:string|null;
-    path:string;
+// ----------------------------------------------------
+// Create New Loom (Thread)
+// ----------------------------------------------------
+interface CreateParams {
+  text: string;
+  author: string; // userId string
+  communityId: string | null;
+  path: string;
 }
+
 export async function createLoom({
-    text,author,communityId,path
-}:Params){
-   try {
-     connectDB();
-     const createLoom=await Loom.create({
-         text,
-         author,
-         community:null
-     });
-     await User.findByIdAndUpdate(author,{
-         $push:{Loom:createLoom._id}
-     });
-     revalidatePath(path);
-   } catch (error) {
-        throw new Error("Failed to create loom");
-   }
-    
-};
+  text,
+  author,
+  communityId,
+  path,
+}: CreateParams) {
+  try {
+    await connectDB();
 
+    const created = await Loom.create({
+      text,
+      author,
+      community: communityId,
+    });
+
+    await User.findByIdAndUpdate(author, {
+      $push: { Loom: created._id },
+    });
+
+    revalidatePath(path);
+  } catch (error) {
+    console.error("Create Loom Error:", error);
+    throw new Error("Failed to create Loom");
+  }
+}
+
+// ----------------------------------------------------
+// Fetch Posts (with Full JSON-Safe Conversion)
+// ----------------------------------------------------
 export async function fetchPosts(pageNumber = 1, pageSize = 20) {
-  connectDB();
+  await connectDB();
 
-  // Calculate the number of posts to skip based on the page number and page size.
   const skipAmount = (pageNumber - 1) * pageSize;
 
-  // Create a query to fetch the posts that have no parent (top-level threads) (a thread that is not a comment/reply).
-  const postsQuery = Loom.find({ parentId: { $in: [null, undefined] } })
-    .sort({ createdAt: "desc" })
+  let posts: any[] = await Loom.find({ parentId: { $in: [null, undefined] } })
+    .sort({ createdAt: -1 })
     .skip(skipAmount)
     .limit(pageSize)
     .populate({
       path: "author",
       model: User,
+      select: "_id name image",
     })
-    
     .populate({
-      path: "children", // Populate the children field
+      path: "children",
       populate: {
-        path: "author", // Populate the author field within children
+        path: "author",
         model: User,
-        select: "_id name parentId image", // Select only _id and username fields of the author
+        select: "_id name image",
       },
-    });
+    })
+    .lean(); // ⚡ Converts Mongoose Docs → Plain JS Objects
 
-  // Count the total number of top-level posts (threads) i.e., threads that are not comments.
-  const totalPostsCount = await Loom.countDocuments({
+  // ⚡ Ensure ALL ObjectId fields become strings (Required for Client Components)
+  posts = posts.map((post) => ({
+    ...post,
+    _id: post._id.toString(),
+
+    author: post.author
+      ? {
+          ...post.author,
+          id: post.author._id.toString(),
+          _id: undefined, // remove raw ObjectId
+        }
+      : null,
+
+    community: post.community
+      ? {
+          ...post.community,
+          id: post.community._id.toString(),
+          _id: undefined,
+        }
+      : null,
+
+    children: post.children?.map((child: { _id: { toString: () => any; }; author: { _id: { toString: () => any; }; }; }) => ({
+      ...child,
+      _id: child._id.toString(),
+      author: child.author
+        ? {
+            ...child.author,
+            id: child.author._id.toString(),
+            _id: undefined,
+          }
+        : null,
+    })),
+  }));
+
+  const totalPosts = await Loom.countDocuments({
     parentId: { $in: [null, undefined] },
-  }); // Get the total count of posts
+  });
 
-  const posts = await postsQuery.exec();
-
-  const isNext = totalPostsCount > skipAmount + posts.length;
+  const isNext = totalPosts > skipAmount + posts.length;
 
   return { posts, isNext };
 }
-
-
