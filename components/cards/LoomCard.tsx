@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
+import { is } from "zod/v4/locales";
 
 interface Props {
   id: string;
@@ -27,11 +29,18 @@ interface Props {
 }
 
 const LoomCard = ({
+  id,
+  currentUserId,
+  parentId,
   text,
   author,
+  community,
+  createdAt,
+  comments,
+  isComment
 }: Props) => {
   return (
-    <article className="flex w-full flex-col rounded-xl bg-dark-2 p-7">
+    <article className={`flex w-full flex-col rounded-xl bg-dark-2 p-7 ${isComment ? 'px-0 xs:px-7':'bg-dark-2 p-7'}`}>
       <div className="flex items-start justify-between">
         <div className="flex w-full flex-1 flex-row gap-4">
             <div className="flex flex-col items-center">
@@ -54,7 +63,22 @@ const LoomCard = ({
                      {text}
                 </p>
                 <div className="mt-5 flex-col gap-3">
-                    <div className="flex gap-3.5"></div>
+                    <div className="flex gap-3.5">
+                      <Image src="/assets/heart-gray.svg" alt="like" width={24} height={24} className="cursor-pointer object-contain" />
+                      <Link href={`/loom/${'id'}`}>
+                        <Image src="/assets/reply.svg" alt="like" width={24} height={24} className="cursor-pointer object-contain" />
+                      </Link>
+                      
+                      <Image src="/assets/repost.svg" alt="like" width={24} height={24} className="cursor-pointer object-contain" />
+                      <Image src="/assets/share.svg" alt="like" width={24} height={24} className="cursor-pointer object-contain" />
+                      {isComment && comments.length > 0 }{
+                        <Link href={`/loom/${id}`}>
+                          <p className="mt-1 text-subtle-medium text-gray-1">
+                            {comments.length} replies
+                          </p>
+                        </Link>
+                      }
+                    </div>
                 </div>
             </div>
         </div>
