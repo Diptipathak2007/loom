@@ -26,7 +26,14 @@ export async function updateUser({
         await connectDB();
         await User.findOneAndUpdate(
             {id:userId},
-            {username:username.toLowerCase(),name,image,bio,onboarded:true},
+            {
+                id: userId,  // ⭐ CRITICAL: Must set id field for upsert
+                username: username.toLowerCase(),
+                name,
+                image,
+                bio,
+                onboarded: true
+            },
             {upsert:true}
         );
         if(path==='/profile/edit'){

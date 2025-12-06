@@ -21,11 +21,12 @@ const LeftSidebar = () => {
             (pathname.includes(link.route) && link.route.length > 1) ||
             pathname === link.route;
 
-          if (link.route === "/profile") link.route = `${link.route}/${userId}`;
+          // ✅ FIX: Don't mutate the original object, create the route dynamically
+          const linkRoute = link.route === "/profile" ? `/profile/${userId}` : link.route;
 
           return (
             <Link
-              href={link.route}
+              href={linkRoute}
               key={link.label}
               className={`leftsidebar_link ${isActive && "bg-primary-500 "}`}
             >

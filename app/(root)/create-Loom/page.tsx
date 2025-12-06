@@ -17,7 +17,7 @@ async function Page() {
   return(
     <>
     <h1 className="head-text">Create Loom</h1>
-    <PostLoom userId={userInfo._id}/>
+    <PostLoom userId={user.id}/>
     </>
   )
 }

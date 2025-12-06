@@ -41,7 +41,7 @@ function PostLoom({ userId }: Props) {
   const onSubmit = async (values: z.infer<typeof LoomValidation>) => {
     await createLoom({
       text: values.loom,
-      author: userId,
+      clerkUserId: userId,
       communityId: null,
       path: pathname,
     });

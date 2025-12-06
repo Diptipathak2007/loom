@@ -34,7 +34,7 @@ export async function createLoom({
     await connectDB();
 
     // Resolve Clerk id -> Mongo User (with ObjectId _id)
-    const user = await User.findOne({ clerkUserId });
+    const user = await User.findOne({ id: clerkUserId });
     if (!user) {
       throw new Error("User not found for given clerkUserId");
     }
@@ -74,14 +74,14 @@ export async function fetchPosts(
     .populate({
       path: "author",
       model: User,
-      select: "_id name image",
+      select: "_id id name image",   // ⭐ IMPORTANT - Use 'id' field
     })
     .populate({
       path: "children",
       populate: {
         path: "author",
         model: User,
-        select: "_id name image",
+        select: "_id id name image",  // ⭐ IMPORTANT - Use 'id' field
       },
     })
     .lean();
@@ -93,7 +93,7 @@ export async function fetchPosts(
     author: post.author
       ? {
           ...post.author,
-          id: post.author._id.toString(),
+          id: post.author.id, // ⭐ USE ID FIELD FROM USER MODEL
           _id: undefined,
         }
       : null,
@@ -113,7 +113,7 @@ export async function fetchPosts(
         author: child.author
           ? {
               ...child.author,
-              id: child.author._id.toString(),
+              id: child.author.id,  // ⭐ USE ID FIELD FROM USER MODEL
               _id: undefined,
             }
           : null,
@@ -189,7 +189,7 @@ export async function addCommentToLoom(
     }
 
     // Resolve Clerk id -> Mongo User
-    const user = await User.findOne({ clerkUserId });
+    const user = await User.findOne({ id: clerkUserId });
     if (!user) {
       throw new Error("User not found for given clerkUserId");
     }
