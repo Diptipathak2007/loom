@@ -211,3 +211,48 @@ export async function addCommentToLoom(
     throw new Error("Unable to add comment");
   }
 }
+
+
+export async function fetchUserPosts(userId:string){
+    try {
+      await connectDB();
+      //find all the threads authored by the user
+      const threads: any = await User.findOne({id:userId})
+        .populate({
+          path:"Loom",
+          model:Loom,
+          populate:{
+            path:"children",
+            model:Loom,
+            populate:{
+              path:"author",
+              model:User,
+              select:"name image id",
+            },
+          },
+        })
+        .lean();
+      
+      if (!threads) return null;
+
+      // Convert MongoDB documents to plain objects
+      return {
+        ...threads,
+        _id: threads._id?.toString(),
+        Loom: threads.Loom?.map((loom: any) => ({
+          ...loom,
+          _id: loom._id?.toString(),
+          children: loom.children?.map((child: any) => ({
+            ...child,
+            _id: child._id?.toString(),
+            author: child.author ? {
+              ...child.author,
+              _id: child.author._id?.toString(),
+            } : null,
+          })),
+        })) || [],
+      };
+    } catch (error) {
+        throw new Error("Unable to fetch user posts");
+    }
+}

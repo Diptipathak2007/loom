@@ -65,7 +65,7 @@ const LoomCard = ({
                 <div className="mt-5 flex-col gap-3">
                     <div className="flex gap-3.5">
                       <Image src="/assets/heart-gray.svg" alt="like" width={24} height={24} className="cursor-pointer object-contain" />
-                      <Link href={`/loom/${'id'}`}>
+                      <Link href={`/loom/${id}`}>
                         <Image src="/assets/reply.svg" alt="like" width={24} height={24} className="cursor-pointer object-contain" />
                       </Link>
                       
@@ -74,7 +74,7 @@ const LoomCard = ({
                       {isComment && comments.length > 0 }{
                         <Link href={`/loom/${id}`}>
                           <p className="mt-1 text-subtle-medium text-gray-1">
-                            {comments.length} replies
+                            {comments?.length} replies
                           </p>
                         </Link>
                       }
