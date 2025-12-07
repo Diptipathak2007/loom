@@ -24,7 +24,7 @@ export default async function Page() {
         <section className="mt-10 flex flex-col gap-5">
           {activity.length > 0 ? (
             <>
-              {activity.map((activity) => (
+              {activity.map((activity: any) => (
                 <Link key={activity._id} href={`/loom/${activity.parentId}`}>
                   <article className="activity-card">
                     <Image
@@ -38,7 +38,7 @@ export default async function Page() {
                       <span className="mr-1 text-primary-500">
                         {activity.author.name}
                       </span>{" "}
-                      replied to your loom
+                      {activity.type === "like" ? "liked your loom" : "replied to your loom"}
                     </p>
                   </article>
                 </Link>

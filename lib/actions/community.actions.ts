@@ -53,7 +53,12 @@ export async function fetchCommunityDetails(id: string) {
   try {
     connectDB();
 
-    const communityDetails = await Community.findOne({ id }).populate([
+    const mongoose = require("mongoose");
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+
+    const query = isObjectId ? { _id: id } : { id: id };
+
+    const communityDetails = await Community.findOne(query).populate([
       "createdBy",
       {
         path: "members",
@@ -62,7 +67,25 @@ export async function fetchCommunityDetails(id: string) {
       },
     ]);
 
-    return communityDetails;
+    if (!communityDetails) return null;
+
+    const threadsCount = await Loom.countDocuments({ community: communityDetails._id });
+
+    return {
+      ...communityDetails.toObject(),
+      _id: communityDetails._id.toString(),
+      threadsCount,
+      members: communityDetails.members.map((member: any) => ({
+        ...member.toObject(),
+        _id: member._id.toString(),
+      })),
+      createdBy: communityDetails.createdBy
+        ? {
+            ...communityDetails.createdBy.toObject(),
+            _id: communityDetails.createdBy._id.toString(),
+          }
+        : null,
+    };
   } catch (error) {
     // Handle any errors
     console.error("Error fetching community details:", error);
@@ -74,28 +97,55 @@ export async function fetchCommunityPosts(id: string) {
   try {
     connectDB();
 
-    const communityPosts = await Community.findById(id).populate({
-      path: "threads",
-      model: Loom,
-      populate: [
-        {
+    const mongoose = require("mongoose");
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+
+    const query = isObjectId ? { _id: id } : { id: id };
+
+    const community = await Community.findOne(query);
+    if (!community) {
+        throw new Error("Community not found");
+    }
+
+    const communityPosts = await Loom.find({ community: community._id })
+      .populate({
+        path: "author",
+        model: User,
+        select: "name image id",
+      })
+      .populate({
+        path: "children",
+        model: Loom,
+        populate: {
           path: "author",
           model: User,
-          select: "name image id", // Select the "name" and "_id" fields from the "User" model
+          select: "image _id",
         },
-        {
-          path: "children",
-          model: Loom,
-          populate: {
-            path: "author",
-            model: User,
-            select: "image _id", // Select the "name" and "_id" fields from the "User" model
-          },
-        },
-      ],
-    });
+      });
 
-    return communityPosts;
+    const plainPosts = communityPosts.map((post) => ({
+        ...post.toObject(),
+        _id: post._id.toString(),
+        author: post.author ? {
+            ...post.author.toObject(),
+            _id: post.author._id.toString()
+        } : null,
+        community: {
+            id: community.id,
+            name: community.name,
+            image: community.image,
+        },
+        children: post.children ? post.children.map((child: any) => ({
+            ...child.toObject(),
+            _id: child._id.toString(),
+            author: child.author ? {
+                ...child.author.toObject(),
+                _id: child.author._id.toString()
+            } : null
+        })) : []
+    }));
+
+    return { Loom: plainPosts };
   } catch (error) {
     // Handle any errors
     console.error("Error fetching community posts:", error);
@@ -149,10 +199,21 @@ export async function fetchCommunities({
 
     const communities = await communitiesQuery.exec();
 
+    // Convert to plain objects
+    const plainCommunities = communities.map((community) => ({
+      ...community.toObject(),
+      _id: community._id.toString(),
+      createdBy: community.createdBy ? community.createdBy.toString() : null,
+      members: community.members.map((member: any) => ({
+        ...member.toObject(),
+        _id: member._id.toString(),
+      })),
+    }));
+
     // Check if there are more communities beyond the current page.
     const isNext = totalCommunitiesCount > skipAmount + communities.length;
 
-    return { communities, isNext };
+    return { communities: plainCommunities, isNext };
   } catch (error) {
     console.error("Error fetching communities:", error);
     throw error;
@@ -274,23 +335,25 @@ export async function deleteCommunity(communityId: string) {
     connectDB();
 
     // Find the community by its ID and delete it
-    const deletedCommunity = await Community.findOneAndDelete({
-      id: communityId,
-    });
+    const mongoose = require("mongoose");
+    const isObjectId = mongoose.Types.ObjectId.isValid(communityId);
+    const query = isObjectId ? { _id: communityId } : { id: communityId };
+
+    const deletedCommunity = await Community.findOneAndDelete(query);
 
     if (!deletedCommunity) {
-      throw new Error("Community not found");
+      throw new Error(`Community not found with id: ${communityId}`);
     }
 
     // Delete all threads associated with the community
-    await Loom.deleteMany({ community: communityId });
+    await Loom.deleteMany({ community: deletedCommunity._id });
 
     // Find all users who are part of the community
-    const communityUsers = await User.find({ communities: communityId });
+    const communityUsers = await User.find({ communities: deletedCommunity._id });
 
     // Remove the community from the 'communities' array for each user
     const updateUserPromises = communityUsers.map((user) => {
-      user.communities.pull(communityId);
+      user.communities.pull(deletedCommunity._id);
       return user.save();
     });
 

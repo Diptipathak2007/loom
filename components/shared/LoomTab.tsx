@@ -1,4 +1,5 @@
 import { fetchUserPosts } from "@/lib/actions/loom.actions";
+import { fetchCommunityPosts } from "@/lib/actions/community.actions";
 import { redirect } from "next/navigation";
 import LoomCard from "../cards/LoomCard";
 
@@ -10,7 +11,12 @@ interface Props{
 
 
 const LoomTab = async({currentUserId,accountId,accountType}:Props) => {
-    let result=await fetchUserPosts(accountId);
+    let result:any;
+    if(accountType==='User'){
+        result=await fetchUserPosts(accountId);
+    }else{
+        result=await fetchCommunityPosts(accountId);
+    }
     if(!result) redirect("/");
     return (
         <section className="mt-9 flex flex-col gap-10">

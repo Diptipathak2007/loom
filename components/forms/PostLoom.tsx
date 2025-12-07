@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import { useOrganization } from "@clerk/nextjs";
+import { useOrganization } from "@clerk/clerk-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -39,12 +39,22 @@ function PostLoom({ userId }: Props) {
   });
 
   const onSubmit = async (values: z.infer<typeof LoomValidation>) => {
-    await createLoom({
+    if(!organization){
+        await createLoom({
+            text: values.loom,
+            clerkUserId: userId,
+            communityId: null,
+            path: pathname,
+        });
+    }else{
+      await createLoom({
       text: values.loom,
       clerkUserId: userId,
-      communityId: null,
+      communityId: organization?organization.id:null,
       path: pathname,
     });
+    }
+    
 
     router.push("/");
   };

@@ -30,13 +30,15 @@ export default async function Home() {
               <LoomCard
                 key={post._id}
                 id={post._id}
-                currentUserId={user?.id}
+                currentUserId={dbUser._id.toString()}
                 parentId={post.parentId}
                 text={post.text}
                 author={post.author}
                 community={post.community}
                 createdAt={post.createdAt}
                 comments={post.children}
+                likes={post.likes}
+                image={post.image}
               />
             ))}
           </>

@@ -8,6 +8,8 @@ const loomSchema = new mongoose.Schema({
    createdAt:{type:Date,default:Date.now},
    parentId:{type:String},
    children:[{type:mongoose.Schema.Types.ObjectId,ref:"Loom"}],
+   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+   image: { type: String },
 });
 
 const Loom = mongoose.models.Loom || mongoose.model("Loom", loomSchema);

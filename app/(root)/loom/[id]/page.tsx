@@ -44,7 +44,7 @@ const Page = async (props: { params: Promise<{ id: string }> }) => {
                    currentUserId={user.id}
                 />
             </div>
-            <div className="mt-10">
+            <div className="mt-10 flex flex-col gap-4">
                 {plainLoom.children?.map((childitem: any) => (
                     <LoomCard
                      key={childitem._id}
@@ -56,6 +56,7 @@ const Page = async (props: { params: Promise<{ id: string }> }) => {
                     community={childitem.community}
                     createdAt={childitem.createdAt}
                     comments={childitem.children}
+                    isComment
                     />
                 ))}
             </div>
